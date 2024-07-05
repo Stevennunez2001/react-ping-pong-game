@@ -1,0 +1,15 @@
+.paddle {
+    position: absolute;
+    width: 20px;
+    height: 100px;
+    background-color: blue;
+  }
+  .paused {
+    animation-play-state: paused;
+  }
+  .paddle-left {
+    left: 0;
+  }
+  .paddle-right {
+    right: 0;
+  }

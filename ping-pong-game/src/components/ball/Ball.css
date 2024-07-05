@@ -1,0 +1,10 @@
+.ball {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    border-radius: 50%;
+  }
+  .paused {
+    animation-play-state: paused;
+  }
