@@ -2,7 +2,6 @@
     position: absolute;
     width: 20px;
     height: 100px;
-    background-color: blue;
   }
   .paused {
     animation-play-state: paused;
