@@ -19,18 +19,7 @@ const App = () => {
 
   
   useEffect(() => {
-    if(!gameRunning){
-      const handleKeyPress = (e) => {
-      switch (e.code){
-        case 'Enter':
-              setGameRunning(true);
-              break;
-          default:
-            break;
-      }
-      }
-    }
-    else {
+    if(gameRunning){
       const handleKeyPress = (e) => {
         switch (e.code) {
           case 'ArrowUp':
