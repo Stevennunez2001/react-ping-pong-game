@@ -5,20 +5,24 @@ import PaddleLeft from './components/paddles/PaddleLeft';
 import PaddleRight from './components/paddles/PaddleRight';
 import Circle from './styling/Circle';
 import Line from './styling/Line';
-import {Container, Row, Col} from 'reactstrap';
+import {Container, Row, Col, Button} from 'reactstrap';
 
 const App = () => {
   const initialBallState = { x: 439, y: 341, speedX: 10, speedY: 10 };
   const initialPaddleState = { left: 300, right: 300 };
+  const gameOverPaddleState = {left: 900, right: 900};
 
   const [ball, setBall] = useState(initialBallState);
   const [paddles, setPaddles] = useState(initialPaddleState);
   const [gameOver, setGameOver] = useState(false);
   const [gameRunning, setGameRunning] = useState(false);
   const ballRef = useRef(null);
+  // const scoreArr = [0, 0];
 
   
+  
   useEffect(() => {
+    
     if(gameRunning){
       const handleKeyPress = (e) => {
         switch (e.code) {
@@ -28,14 +32,18 @@ const App = () => {
           case 'ArrowDown':
             setPaddles((prev) => ({ ...prev, right: Math.min(prev.right + 10, 600) }));
             break;
-          case 'KeyW':
+          
+        }
+
+        switch (e.code) {
+        case 'KeyW':
             setPaddles((prev) => ({ ...prev, left: Math.max(prev.left - 10, 0) }));
             break;
           case 'KeyS':
             setPaddles((prev) => ({ ...prev, left: Math.min(prev.left + 10, 600) }));
             break;
-        }
       };
+    };
 
       const updateGame = () => {
         setBall((prevBall) => ({
@@ -75,11 +83,16 @@ const App = () => {
       }
       if (ball.y <= 12) {
         setBall((prevBall) => ({ ...prevBall, speedY: Math.abs(prevBall.speedX)}));
+        // scoreArr[1] += 1;
+        // if(scoreArr[1] >= 5) {
+        //   setGameOver(true)
+        // }
       }
 
       // Check for game over
       if (ball.x < 0 || ball.x > 880) {
         setGameOver(true);
+        setPaddles(gameOverPaddleState);
         pauseGame();
       }
     };
@@ -131,7 +144,11 @@ const App = () => {
       <PaddleLeft paddles={paddles} gameRunning={gameRunning} />
       <PaddleRight paddles={paddles} gameRunning={gameRunning} />
       <Ball ball={ball} gameRunning={gameRunning} ref={ballRef} />
-      {gameOver && <div className="game-over">Game Over</div>}
+      {gameOver && 
+      <>
+      <div className="game-over">Game Over</div> 
+      <PaddleLeft paddles={paddles} gameRunning={!gameRunning} />
+      </>}
       <Circle />
       <Line />
     </div>
