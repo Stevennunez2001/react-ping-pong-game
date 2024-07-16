@@ -5,10 +5,17 @@ import PaddleLeft from './components/paddles/PaddleLeft';
 import PaddleRight from './components/paddles/PaddleRight';
 import Circle from './styling/Circle';
 import Line from './styling/Line';
+import  Scoreboard  from './components/scores/Scores';
 import {Container, Row, Col, Button} from 'reactstrap';
 
+let scoreArr = [0, 0];
+const randomizer = Math.floor(Math.random() * 2);
+
 const App = () => {
-  const initialBallState = { x: 439, y: 341, speedX: 10, speedY: 10 };
+  const ballSpeed = Math.floor(Math.random() * 5) + 10
+  const [randomBallSpeed, setRandomBallSpeed] = useState(ballSpeed);
+  const initialBallState = { x: 439, y: 341, speedX: randomBallSpeed, speedY: randomBallSpeed };
+  const gameOverBallState = {x: 920};
   const initialPaddleState = { left: 300, right: 300 };
   const gameOverPaddleState = {left: 900, right: 900};
 
@@ -17,9 +24,23 @@ const App = () => {
   const [gameOver, setGameOver] = useState(false);
   const [gameRunning, setGameRunning] = useState(false);
   const ballRef = useRef(null);
-  // const scoreArr = [0, 0];
+  const initialScoreState = {playerLeft: 0, playerRight: 0}
+  // let score = {playerLeft: 5, playerRight: 0};
+  const ballDir = Math.floor(Math.random() * 2);
+  const [randomBallDir, setRandomBallDir] = useState(ballDir);
+  const [scores, setScores] = useState(initialScoreState)
 
+  let posrOrNeg = '';
+  if(randomBallDir > 0) {
+    posrOrNeg = 1;
+  } else {
+    posrOrNeg = -1;
+  };
   
+  
+ 
+  
+
   
   useEffect(() => {
     
@@ -44,14 +65,24 @@ const App = () => {
             break;
       };
     };
-
+    
       const updateGame = () => {
+        
+        if(randomBallDir > 0) {
         setBall((prevBall) => ({
           ...prevBall,
           x: prevBall.x + prevBall.speedX,
           y: prevBall.y + prevBall.speedY,
         }
       ));
+    } else {
+      setBall((prevBall) => ({
+        ...prevBall,
+        x: prevBall.x - prevBall.speedX,
+        y: prevBall.y - prevBall.speedY,
+      }
+    ));
+    }
 
         const ballRect = ballRef.current.getBoundingClientRect();
         const paddleLeftRect = document.getElementById('paddle-left').getBoundingClientRect();
@@ -64,7 +95,8 @@ const App = () => {
         ballRect.bottom >= paddleLeftRect.top &&
         ballRect.top <= paddleLeftRect.bottom
       ) {
-        setBall((prevBall) => ({ ...prevBall, speedX: Math.abs(prevBall.speedX) }));
+        setBall((prevBall) => ({ ...prevBall, speedX: posrOrNeg * Math.abs(prevBall.speedX)}));
+        console.log(-posrOrNeg * Math.abs(ball.speedY))
       }
 
       // Check collision with right paddle
@@ -74,27 +106,48 @@ const App = () => {
         ballRect.bottom >= paddleRightRect.top &&
         ballRect.top <= paddleRightRect.bottom
       ) {
-        setBall((prevBall) => ({ ...prevBall, speedX: -Math.abs(prevBall.speedX) }));
+        setBall((prevBall) => ({ ...prevBall, speedX: posrOrNeg*Math.abs(prevBall.speedX) }));
       }
 
       // Check for collisions with top
       if (ball.y >= 675){
-      setBall((prevBall) => ({ ...prevBall, speedY: -Math.abs(prevBall.speedY) }));
+      setBall((prevBall) => ({ ...prevBall, speedY: -posrOrNeg*Math.abs(prevBall.speedY) }));
       }
-      if (ball.y <= 12) {
-        setBall((prevBall) => ({ ...prevBall, speedY: Math.abs(prevBall.speedX)}));
-        // scoreArr[1] += 1;
-        // if(scoreArr[1] >= 5) {
-        //   setGameOver(true)
-        // }
+      if (ball.y <= 25) {
+          setBall((prevBall) => ({ ...prevBall, speedY: posrOrNeg * Math.abs(prevBall.speedY)}));
       }
+      
 
       // Check for game over
-      if (ball.x < 0 || ball.x > 880) {
-        setGameOver(true);
-        setPaddles(gameOverPaddleState);
+      if (ball.x > 880) {
+        // setGameOver(true);
+        setBall(initialBallState);
+        // scoreArr[0]++;
+        setScores((prevScore) => ({
+          playerLeft: prevScore.playerLeft+1, 
+          playerRight: prevScore.playerRight
+       }));
+        
+        setPaddles(initialPaddleState);
+        pauseGame();
+        
+      } else if (ball.x < 0) {
+        // setGameOver(true);
+        setBall(initialBallState);
+
+        setScores((prevScore) => ({
+           playerRight: prevScore.playerRight++, 
+           playerLeft: prevScore.playerLeft
+        }));
+        setPaddles(initialPaddleState);
+        
+        
+      
+        
+        
         pauseGame();
       }
+      
     };
 
 
@@ -109,15 +162,34 @@ const App = () => {
     }
   }, [gameRunning, ball]);
 
+
+  useEffect(() => {
+          if(scores.playerRight > 4) {
+            endGame();
+          }
+          if(scores.playerLeft > 4) {
+            endGame();
+          }
+        }, [scores])
+
   const startGame = () => {
     setGameRunning(true);
+    setRandomBallSpeed(ballSpeed);
+    setRandomBallDir(ballDir);
   };
+  const endGame = () => {
+    setGameOver(true);
+    setPaddles(gameOverPaddleState);
+    setBall(gameOverBallState);
+  }
 
 
   const restartGame = () => {
+    setScores(initialScoreState);
     setBall(initialBallState);
     setPaddles(initialPaddleState);
     setGameOver(false);
+    pauseGame();
   };
 
   const pauseGame = () => {
@@ -129,13 +201,18 @@ const App = () => {
     <Container>
     <Row className="mt-2 controls d-flex btn-group justify-content-center">
       <Col>
-        <button className="btn btn-success btn-lg offset-1" onClick={startGame}>Start</button>
+        <Button className="btn-success btn-lg offset-1" onClick={startGame}>Start</Button>
         </Col>
         <Col>
-        <button className="btn btn-primary btn-lg offset-4" onClick={restartGame}>Restart</button>
+        <Button className="btn-info btn-lg offset-4" onClick={restartGame}>Restart</Button>
         </Col>
         <Col>
-        <button className="btn btn-warning btn-lg offset-8" onClick={pauseGame}>Pause</button>
+        <Button className="btn-warning btn-lg offset-8" onClick={pauseGame}>Pause</Button>
+        </Col>
+      </Row>
+      <Row>
+        <Col className='offset-2'>
+          <Scoreboard score={scores}/>
         </Col>
       </Row>
       </Container>
@@ -146,12 +223,14 @@ const App = () => {
       <Ball ball={ball} gameRunning={gameRunning} ref={ballRef} />
       {gameOver && 
       <>
-      <div className="game-over">Game Over</div> 
+      <div className="game-over">Game Over</div>
       <PaddleLeft paddles={paddles} gameRunning={!gameRunning} />
       </>}
       <Circle />
       <Line />
+      
     </div>
+    
     </>
     
   );
